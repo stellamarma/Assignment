@@ -11,11 +11,11 @@ const props = defineProps<{ data: TimeSeriesData[] }>();
 
 const chartData = computed(() => {
   return {
-    labels: props.data.map((d) => d.timestamp),
+    labels: props.data.map((d) => d.DateTime),
     datasets: [
-      { label: "Series 1", data: props.data.map((d) => d.series1), borderColor: "red" },
-      { label: "Series 2", data: props.data.map((d) => d.series2), borderColor: "blue" },
-      { label: "Series 3", data: props.data.map((d) => d.series3), borderColor: "green" }
+      { label: "Series 1", data: props.data.map((d) => d.ENTSOE_DE_DAM_Price), borderColor: "red" },
+      { label: "Series 2", data: props.data.map((d) => d.ENTSOE_GR_DAM_Price), borderColor: "blue" },
+      { label: "Series 3", data: props.data.map((d) => d.ENTSOE_FR_DAM_Price), borderColor: "green" }
     ]
   };
 });

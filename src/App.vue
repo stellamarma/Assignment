@@ -5,7 +5,6 @@ import DataTable from "./components/DataTable.vue";
 import LineChart from "./components/LineChart.vue";
 import type { TimeSeriesData } from "./types/types.ts";
 
-
 const timeSeriesData = ref<TimeSeriesData[]>([]);
 
 onMounted(async () => {

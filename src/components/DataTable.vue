@@ -18,11 +18,11 @@ const props = defineProps<{ data: TimeSeriesData[] }>();
       </tr>
     </thead>
     <tbody>
-      <tr v-for="row in props.data" :key="row.timestamp">
-        <td>{{ row.timestamp }}</td>
-        <td>{{ row.series1 }}</td>
-        <td>{{ row.series2 }}</td>
-        <td>{{ row.series3 }}</td>
+      <tr v-for="row in props.data" :key="row.DateTime">
+        <td>{{ row.DateTime }}</td>
+        <td>{{ row.ENTSOE_DE_DAM_Price}}</td>
+        <td>{{ row.ENTSOE_GR_DAM_Price }}</td>
+        <td>{{ row.ENTSOE_FR_DAM_Price}}</td>
       </tr>
     </tbody>
   </table>
