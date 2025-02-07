@@ -13,9 +13,9 @@ const chartData = computed(() => {
   return {
     labels: props.data.map((d) => d.DateTime),
     datasets: [
-      { label: "Series 1", data: props.data.map((d) => d.ENTSOE_DE_DAM_Price), borderColor: "red" },
-      { label: "Series 2", data: props.data.map((d) => d.ENTSOE_GR_DAM_Price), borderColor: "blue" },
-      { label: "Series 3", data: props.data.map((d) => d.ENTSOE_FR_DAM_Price), borderColor: "green" }
+      { label: "Price-De", data: props.data.map((d) => d.ENTSOE_DE_DAM_Price), borderColor: "red" },
+      { label: "Price-Gr", data: props.data.map((d) => d.ENTSOE_GR_DAM_Price), borderColor: "blue" },
+      { label: "Price-Fr", data: props.data.map((d) => d.ENTSOE_FR_DAM_Price), borderColor: "green" }
     ]
   };
 });

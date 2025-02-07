@@ -12,9 +12,9 @@ const props = defineProps<{ data: TimeSeriesData[] }>();
     <thead>
       <tr>
         <th>Timestamp</th>
-        <th>Series 1</th>
-        <th>Series 2</th>
-        <th>Series 3</th>
+        <th>Price-De</th>
+        <th>Price-Gr</th>
+        <th>Price-Fr</th>
       </tr>
     </thead>
     <tbody>
