@@ -1,111 +1,78 @@
+<template>
+  <div class="dashboard">
+    <h1>📊 Time Series Dashboard</h1>
+
+    <!-- Διαγράφημα -->
+    <LineChart :data="filteredData" />
+
+    <div class="filters">
+      <!-- Ημερομηνία Έναρξης -->
+      <input type="date" v-model="startDate" />
+
+      <!-- Ημερομηνία Λήξης -->
+      <input type="date" v-model="endDate" />
+
+      <!-- Κουμπί για το φιλτράρισμα -->
+      <button @click="applyFilters">🔍 Apply Filters</button>
+    </div>
+
+    <!-- Εμφάνιση πίνακα δεδομένων -->
+    <button @click="showTable = !showTable">
+      {{ showTable ? "📉 Hide Data Table" : "📈 Show Data Table" }}
+    </button>
+
+    <transition name="fade">
+      <DataTable v-if="showTable" :data="filteredData" />
+    </transition>
+
+    <!-- Κουμπί για επιστροφή στην κορυφή -->
+    <button @click="scrollToTop">⬆ Go to Top</button>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import DataTable from "./components/DataTable.vue";
 import LineChart from "./components/LineChart.vue";
 import type { TimeSeriesData } from "./types/types.ts";
 
+// Δημιουργία των refs για τις ημερομηνίες και τα δεδομένα
 const timeSeriesData = ref<TimeSeriesData[]>([]);
-const showTable = ref(false); // Έλεγχος εμφάνισης πίνακα
+const showTable = ref(false);
+const startDate = ref<string | null>(null);
+const endDate = ref<string | null>(null);
+const filteredData = ref<TimeSeriesData[]>([]);
 
-// Φόρτωση δεδομένων
+// Αρχικοποίηση των δεδομένων από το αρχείο JSON
 onMounted(async () => {
   const response = await fetch("/data/timeseries.json");
-  timeSeriesData.value = await response.json();
+  const data = await response.json();
+
+  // Μετατροπή της DateTime σε Date και αποθήκευση στα δεδομένα
+  timeSeriesData.value = data.map((row: any) => ({
+    ...row,
+    DateTime: new Date(row.DateTime), // Μετατροπή του DateTime σε αντικείμενο Date
+  }));
+
+  // Αρχικοποίηση του filteredData με όλα τα δεδομένα
+  filteredData.value = timeSeriesData.value;
 });
 
-// Scroll προς την κορυφή
+// Συνάρτηση για την εφαρμογή των φίλτρων
+const applyFilters = () => {
+  filteredData.value = timeSeriesData.value.filter((row) => {
+    const rowDate = new Date(row.DateTime); // Μετατροπή του row.DateTime σε Date
+
+    const isAfterStart = startDate.value ? rowDate >= new Date(startDate.value) : true;
+    const isBeforeEnd = endDate.value ? rowDate <= new Date(endDate.value) : true;
+
+    return isAfterStart && isBeforeEnd;
+  });
+};
+
+// Συνάρτηση για να επιστρέψει τον χρήστη στην κορυφή
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 </script>
 
-<template>
-  <div class="dashboard">
-    <h1>📊 Time Series Dashboard</h1>
-
-    <LineChart :data="timeSeriesData" />
-
-    <div class="button-container">
-      <button @click="showTable = !showTable">
-        {{ showTable ? "📉 Hide Data Table" : "📈 Show Data Table" }}
-      </button>
-    </div>
-
-    <transition name="fade">
-      <div v-if="showTable" class="table-container">
-        <DataTable :data="timeSeriesData" />
-
-        <!-- Κουμπί για scroll στην κορυφή -->
-        <button class="scroll-top" @click="scrollToTop">🔝 Back to Top</button>
-      </div>
-    </transition>
-  </div>
-</template>
-
-<style scoped>
-/* Βασικό Styling */
-.dashboard {
-  max-width: 900px;
-  margin: auto;
-  text-align: center;
-  font-family: "Arial", sans-serif;
-}
-
-h1 {
-  color: #333;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-/* Κουμπί εμφάνισης πίνακα */
-.button-container {
-  margin: 20px 0;
-}
-
-button {
-  padding: 12px 20px;
-  font-size: 16px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: white;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-}
-
-button:hover {
-  background: linear-gradient(135deg, #0056b3, #003d82);
-  transform: scale(1.05);
-}
-
-/* Στυλ του πίνακα */
-.table-container {
-  margin-top: 20px;
-  padding: 15px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-}
-
-/* Κουμπί "Back to Top" */
-.scroll-top {
-  margin-top: 20px;
-  padding: 10px 15px;
-  font-size: 14px;
-  background: #00ade6;
-  border-radius: 20px;
-}
-
-.scroll-top:hover {
-  background: #00ade6;
-}
-
-/* Εφέ εμφάνισης (fade-in) */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
-</style>
