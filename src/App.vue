@@ -4,31 +4,43 @@
 
     <div class="content">
       <!-- Διάγραμμα -->
-      <LineChart :data="filteredData" class="chart" />
-
-      <!-- Φίλτρα -->
-      <div class="filters">
-        <label>📅 Start Date:</label>
-        <input type="date" v-model="startDate" />
-
-        <label>📅 End Date:</label>
-        <input type="date" v-model="endDate" />
-
-        <button class="search-btn" @click="applyFilters">🔍 Apply</button>
+      <div class="chart-container">
+        <LineChart :data="filteredData" class="chart" />
       </div>
     </div>
-  </div>
+
+    <!-- Φίλτρα -->
+    <div class="filters">
+      <label>📅 Start Date:</label>
+      <input type="date" v-model="startDate" />
+
+      <label>📅 End Date:</label>
+      <input type="date" v-model="endDate" />
+
+      <button  class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
+    </div>
+    
+    <!-- Κουμπί εμφάνισης/απόκρυψης του πίνακα -->
+    <button  class="btn btn-primary" @click="showTable = !showTable">
+      {{ showTable ? "Hide Table" : "Show Table" }}
+    </button>
+
+    <!-- Εμφάνιση του πίνακα μόνο όταν το showTable είναι true -->
+    <TableData v-if="showTable" :data="filteredData" />
+  </div>    
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import LineChart from "./components/LineChart.vue";
+import TableData from "./components/DataTable.vue"; 
 import type { TimeSeriesData } from "./types/types.ts";
 
 const timeSeriesData = ref<TimeSeriesData[]>([]);
 const filteredData = ref<TimeSeriesData[]>([]);
 const startDate = ref<string | null>(null);
 const endDate = ref<string | null>(null);
+const showTable = ref(false);
 
 // Φόρτωση δεδομένων από JSON
 onMounted(async () => {
@@ -50,81 +62,67 @@ onMounted(async () => {
 // Φιλτράρισμα με βάση τις ημερομηνίες
 const applyFilters = () => {
   if (!startDate.value && !endDate.value) {
-    // Εάν δεν έχουν επιλεγεί ημερομηνίες, επιστρέφουμε όλα τα δεδομένα
     filteredData.value = timeSeriesData.value;
     return;
   }
 
   filteredData.value = timeSeriesData.value.filter((row) => {
-    const rowDate = row.DateTime.split("T")[0]; // Απομονώνουμε την ημερομηνία από το DateTime
-
+    const rowDate = row.DateTime.split("T")[0];
     const isAfterStart = startDate.value ? rowDate >= startDate.value : true;
     const isBeforeEnd = endDate.value ? rowDate <= endDate.value : true;
-
     return isAfterStart && isBeforeEnd;
   });
 };
 </script>
 
 
-<style scoped>
+<style>
+@media (min-width: 1024px) { 
+    #app {
+        display: block !important;  /* Αυτό θα ακυρώσει οποιονδήποτε κανόνα display: grid */
+        padding: 0 2rem !important; /* Επίσης θα έχει προτεραιότητα */
+    }
+}
+/* Στρογγυλά κουμπιά */
+
 .dashboard {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: auto;
   text-align: center;
-  padding: 20px;
+  padding: 40px;
 }
 
 h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
+  font-size: 28px;
+  margin-bottom: 30px;
 }
 
 .content {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-
-.chart {
-  flex: 3;
-  max-width: 800px;
-}
-
-.filters {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
-
-label {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-input {
-  padding: 8px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
   width: 100%;
 }
 
-.search-btn {
-  background-color: #007bff;
-  color: white;
-  padding: 10px 15px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease-in-out;
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
-.search-btn:hover {
-  background-color: #0056b3;
+.chart {
+  width: 800px;
+  height: 400px;
+}
+
+.filters {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
 }
 </style>
+
