@@ -17,49 +17,75 @@
       <label>📅 End Date:</label>
       <input type="date" v-model="endDate" />
 
-      <button  class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
+      <button class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
     </div>
     
-    <!-- Κουμπί εμφάνισης/απόκρυψης του πίνακα -->
-    <button  class="btn btn-primary" @click="showTable = !showTable">
-      {{ showTable ? "Hide Table" : "Show Table" }}
-    </button>
+    <!-- Κουμπιά εμφάνισης/απόκρυψης του πίνακα και προσθήκης νέου δεδομένου -->
+    <div class="buttons">
+      <button class="btn btn-primary" @click="showTable = !showTable">
+        {{ showTable ? "Hide Table" : "Show Table" }}
+      </button>
+      <button class="btn btn-success" @click="showAddForm = !showAddForm">
+        {{ showAddForm ? "Cancel" : "Add New Data" }}
+      </button>
+    </div>
 
     <!-- Εμφάνιση του πίνακα μόνο όταν το showTable είναι true -->
-    <TableData v-if="showTable" :data="filteredData" />
-  </div>    
+    <TableData v-if="showTable" :data="filteredData" @updateData="updateData" />
+
+    <!-- Φόρμα προσθήκης νέας τιμής -->
+    <AddDataForm 
+      v-if="showAddForm" 
+      @addData="addNewData" 
+      @cancelAdd="showAddForm = false" 
+    />
+
+    <!-- Ελέγχοι για εμφάνιση/απόκρυψη σειρών -->
+    <div v-if="showTable">
+      <div v-for="(row, index) in filteredData" :key="index">
+        <input 
+          type="checkbox" 
+          v-model="row.visible" 
+          @change="updateFilteredData" 
+        />
+        Show {{ row.DateTime }} in chart and table
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import LineChart from "./components/LineChart.vue";
-import TableData from "./components/DataTable.vue"; 
+import TableData from "./components/DataTable.vue";
+import AddDataForm from "./components/AddDataForm.vue"; // Importing the AddDataForm component
 import type { TimeSeriesData } from "./types/types.ts";
 
+// Αρχικοί πίνακες δεδομένων και άλλες μεταβλητές
 const timeSeriesData = ref<TimeSeriesData[]>([]);
 const filteredData = ref<TimeSeriesData[]>([]);
 const startDate = ref<string | null>(null);
 const endDate = ref<string | null>(null);
 const showTable = ref(false);
+const showAddForm = ref(false);
 
 // Φόρτωση δεδομένων από JSON
 onMounted(async () => {
   const response = await fetch("/data/timeseries.json");
   const data: TimeSeriesData[] = await response.json();
 
-  // Μετατροπή των δεδομένων και απόδοση τιμών
   timeSeriesData.value = data.map((row) => ({
     ...row,
     ENTSOE_DE_DAM_Price: parseFloat(row.ENTSOE_DE_DAM_Price),
     ENTSOE_GR_DAM_Price: parseFloat(row.ENTSOE_GR_DAM_Price),
     ENTSOE_FR_DAM_Price: parseFloat(row.ENTSOE_FR_DAM_Price),
+    visible: true,
   }));
 
-  // Αρχικό φιλτράρισμα όλων των δεδομένων
-  filteredData.value = timeSeriesData.value;
+  filteredData.value = [...timeSeriesData.value];
 });
 
-// Φιλτράρισμα με βάση τις ημερομηνίες
+// Εφαρμογή φίλτρων με βάση τις ημερομηνίες
 const applyFilters = () => {
   if (!startDate.value && !endDate.value) {
     filteredData.value = timeSeriesData.value;
@@ -72,6 +98,40 @@ const applyFilters = () => {
     const isBeforeEnd = endDate.value ? rowDate <= endDate.value : true;
     return isAfterStart && isBeforeEnd;
   });
+};
+
+// Προσθήκη νέας σειράς δεδομένων στον πίνακα
+const addNewData = (newRow: TimeSeriesData) => {
+  timeSeriesData.value.push(newRow);
+  filteredData.value = [...timeSeriesData.value];
+};
+
+
+// Ενημέρωση δεδομένων στον πίνακα και το διάγραμμα
+const updateData = (updatedRow: TimeSeriesData, index: number) => {
+  const isValid = validateInput(updatedRow);
+  if (isValid) {
+    filteredData.value[index] = updatedRow;
+  } else {
+    alert("Invalid value. Please enter a number between -2000 and 2000.");
+  }
+};
+
+// Έλεγχος εγκυρότητας εισόδου
+const validateInput = (row: TimeSeriesData): boolean => {
+  const fields = ["ENTSOE_DE_DAM_Price", "ENTSOE_GR_DAM_Price", "ENTSOE_FR_DAM_Price"];
+  for (const field of fields) {
+    const value = row[field];
+    if (isNaN(value) || value < -2000 || value > 2000) {
+      return false;
+    }
+  }
+  return true;
+};
+
+// Ενημέρωση φιλτραρισμένων δεδομένων (μετά την αλλαγή ορατότητας μιας σειράς)
+const updateFilteredData = () => {
+  filteredData.value = timeSeriesData.value.filter((row) => row.visible);
 };
 </script>
 
@@ -124,5 +184,29 @@ h1 {
   gap: 15px;
   margin-top: 20px;
 }
+/* Στυλ για τα κουμπιά */
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* Αυξάνουμε το κενό μεταξύ των κουμπιών */
+  margin-top: 10px;
+}
+
+/* Στυλ για να κεντράρεις τα κουμπιά αν χρειαστεί */
+.btn {
+  padding: 40px 15px;
+  border-radius: 5px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
 </style>
 

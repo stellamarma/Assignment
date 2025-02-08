@@ -1,4 +1,5 @@
 export type TimeSeriesData ={
+    editing: any;
     DateTime: string ; // "DD-MM-YYYY HH:mm"
     ENTSOE_DE_DAM_Price: number;
     ENTSOE_GR_DAM_Price: number;
