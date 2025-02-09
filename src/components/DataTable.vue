@@ -11,7 +11,8 @@
       </thead>
       <tbody>
         <tr v-for="(row, index) in data" :key="index">
-          <td>{{ row.DateTime }}</td>
+          <!-- Μορφοποίηση ημερομηνίας -->
+          <td>{{ formatDate(row.DateTime) }}</td>
           
           <!-- Δυνατότητα επεξεργασίας για την τιμή DE -->
           <td>
@@ -63,7 +64,7 @@
     </table>
 </template>
 
-  <script setup lang="ts">
+<script setup lang="ts">
 import { defineProps, defineEmits } from "vue";
 import type { TimeSeriesData } from "../types/types.ts";
 
@@ -75,6 +76,18 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["updateData"]);
+
+// Συνάρτηση για τη μορφοποίηση ημερομηνίας
+const formatDate = (dateTime: string) => {
+  const date = new Date(dateTime);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
+};
 
 // Τόσο οι τιμές όσο και η κατάσταση (επεξεργασία ή όχι) του πίνακα
 const toggleEdit = (row: TimeSeriesData) => {

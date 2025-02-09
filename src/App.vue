@@ -97,12 +97,12 @@ onMounted(async () => {
 // Εφαρμογή φίλτρων με βάση τις ημερομηνίες
 const applyFilters = () => {
   if (!startDate.value || !endDate.value) {
-    dateError.value = "Παρακαλώ επιλέξτε ημερομηνίες!";
+    dateError.value = "Please select dates!";
     return;
   }
 
   if (startDate.value > endDate.value) {
-    dateError.value = "Η ημερομηνία έναρξης δεν μπορεί να είναι μεγαλύτερη από την ημερομηνία λήξης!";
+    dateError.value = "The start date cannot be greater than the end date!";
     return;
   }
 
