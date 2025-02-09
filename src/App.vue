@@ -20,6 +20,8 @@
       <button class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
     </div>
     
+    <p v-if="dateError" class="error-message">{{ dateError }}</p>
+
     <!-- Κουμπιά εμφάνισης/απόκρυψης του πίνακα και προσθήκης νέου δεδομένου -->
     <div class="buttons">
       <button class="btn btn-primary" @click="showTable = !showTable">
@@ -55,10 +57,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import LineChart from "./components/LineChart.vue";
 import TableData from "./components/DataTable.vue";
-import AddDataForm from "./components/AddDataForm.vue"; // Importing the AddDataForm component
+import AddDataForm from "./components/AddDataForm.vue";
 import type { TimeSeriesData } from "./types/types.ts";
 
 // Αρχικοί πίνακες δεδομένων και άλλες μεταβλητές
@@ -66,6 +68,7 @@ const timeSeriesData = ref<TimeSeriesData[]>([]);
 const filteredData = ref<TimeSeriesData[]>([]);
 const startDate = ref<string | null>(null);
 const endDate = ref<string | null>(null);
+const dateError = ref<string | null>(null);
 const showTable = ref(false);
 const showAddForm = ref(false);
 
@@ -82,21 +85,32 @@ onMounted(async () => {
     visible: true,
   }));
 
+  // Ορισμός των αρχικών ημερομηνιών
+  if (timeSeriesData.value.length > 0) {
+    startDate.value = timeSeriesData.value[0].DateTime.split("T")[0];
+    endDate.value = timeSeriesData.value[timeSeriesData.value.length - 1].DateTime.split("T")[0];
+  }
+
   filteredData.value = [...timeSeriesData.value];
 });
 
 // Εφαρμογή φίλτρων με βάση τις ημερομηνίες
 const applyFilters = () => {
-  if (!startDate.value && !endDate.value) {
-    filteredData.value = timeSeriesData.value;
+  if (!startDate.value || !endDate.value) {
+    dateError.value = "Παρακαλώ επιλέξτε ημερομηνίες!";
     return;
   }
 
+  if (startDate.value > endDate.value) {
+    dateError.value = "Η ημερομηνία έναρξης δεν μπορεί να είναι μεγαλύτερη από την ημερομηνία λήξης!";
+    return;
+  }
+
+  dateError.value = null; // Καθαρισμός σφάλματος
+
   filteredData.value = timeSeriesData.value.filter((row) => {
     const rowDate = row.DateTime.split("T")[0];
-    const isAfterStart = startDate.value ? rowDate >= startDate.value : true;
-    const isBeforeEnd = endDate.value ? rowDate <= endDate.value : true;
-    return isAfterStart && isBeforeEnd;
+    return rowDate >= startDate.value && rowDate <= endDate.value;
   });
 };
 
@@ -106,11 +120,9 @@ const addNewData = (newRow: TimeSeriesData) => {
   filteredData.value = [...timeSeriesData.value];
 };
 
-
 // Ενημέρωση δεδομένων στον πίνακα και το διάγραμμα
 const updateData = (updatedRow: TimeSeriesData, index: number) => {
-  const isValid = validateInput(updatedRow);
-  if (isValid) {
+  if (validateInput(updatedRow)) {
     filteredData.value[index] = updatedRow;
   } else {
     alert("Invalid value. Please enter a number between -2000 and 2000.");
@@ -120,13 +132,10 @@ const updateData = (updatedRow: TimeSeriesData, index: number) => {
 // Έλεγχος εγκυρότητας εισόδου
 const validateInput = (row: TimeSeriesData): boolean => {
   const fields = ["ENTSOE_DE_DAM_Price", "ENTSOE_GR_DAM_Price", "ENTSOE_FR_DAM_Price"];
-  for (const field of fields) {
+  return fields.every((field) => {
     const value = row[field];
-    if (isNaN(value) || value < -2000 || value > 2000) {
-      return false;
-    }
-  }
-  return true;
+    return !isNaN(value) && value >= -2000 && value <= 2000;
+  });
 };
 
 // Ενημέρωση φιλτραρισμένων δεδομένων (μετά την αλλαγή ορατότητας μιας σειράς)
@@ -134,6 +143,16 @@ const updateFilteredData = () => {
   filteredData.value = timeSeriesData.value.filter((row) => row.visible);
 };
 </script>
+
+<style>
+.error-message {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+}
+</style>
+
 
 
 <style>
