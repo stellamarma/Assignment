@@ -42,17 +42,7 @@
       @cancelAdd="showAddForm = false" 
     />
 
-    <!-- Ελέγχοι για εμφάνιση/απόκρυψη σειρών -->
-    <div v-if="showTable">
-      <div v-for="(row, index) in filteredData" :key="index">
-        <input 
-          type="checkbox" 
-          v-model="row.visible" 
-          @change="updateFilteredData" 
-        />
-        Show {{ row.DateTime }} in chart and table
-      </div>
-    </div>
+ 
   </div>
 </template>
 
