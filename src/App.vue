@@ -141,11 +141,6 @@ const updateFilteredData = () => {
   text-align: center;
   margin-top: 10px;
 }
-</style>
-
-
-
-<style>
 @media (min-width: 1024px) { 
     #app {
         display: block !important;  /* Αυτό θα ακυρώσει οποιονδήποτε κανόνα display: grid */
