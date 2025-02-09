@@ -1,34 +1,32 @@
-# assignment
+# 📊 Time Series Dashboard
 
-This template should help get you started developing with Vue 3 in Vite.
 
-## Recommended IDE Setup
+## 💻 About the Project
+The **Time Series Dashboard** is a Vue 3 and TypeScript-based web application that visualizes and manages time-series data. Users can filter data, display charts, and update or add new records dynamically.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 🛠️ Features
+- 📅 Filter data based on date range
+- 📈 Interactive Line Chart visualization
+- 📝 Editable data table
+- ➕ Add new data entries
+- 🎨 Responsive design for various screen sizes
 
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## 📦 Installation
 
 ```sh
-npm install
+# Clone the repository
+git clone https://github.com/stellamarma/Assignment.git
+
+# Navigate to the project directory
+cd Assignment 
+
+# Install dependencies
+npm install  # or yarn install
 ```
 
-### Compile and Hot-Reload for Development
+## ▶️ Usage
 
 ```sh
-npm run dev
+npm run dev  # or yarn dev
 ```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-# Assignment
+Then open `http://localhost:5173/` in your browser.
