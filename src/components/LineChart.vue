@@ -34,7 +34,6 @@
       ]
     };
   });
-  
   // Επιλογές διαγράμματος με προσαρμοσμένο format στον άξονα Χ
   const chartOptions = {
     responsive: true,
