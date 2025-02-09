@@ -35,14 +35,17 @@
     <!-- Εμφάνιση του πίνακα μόνο όταν το showTable είναι true -->
     <TableData v-if="showTable" :data="filteredData" @updateData="updateData" />
 
+    <!-- Κουμπί για κύλιση στην κορυφή της σελίδας, εμφανίζεται μόνο αν ο πίνακας είναι ορατός -->
+    <button v-if="showTable" class="btn btn-secondary" @click="scrollToTop" style="position: fixed; bottom: 20px; right: 20px;">
+      ⬆️ Go to Top
+    </button>
+
     <!-- Φόρμα προσθήκης νέας τιμής -->
     <AddDataForm 
       v-if="showAddForm" 
       @addData="addNewData" 
       @cancelAdd="showAddForm = false" 
     />
-
- 
   </div>
 </template>
 
@@ -68,22 +71,21 @@ onMounted(async () => {
   const data: TimeSeriesData[] = await response.json();
 
   timeSeriesData.value = data.map((row) => ({
-  ...row,
-  ENTSOE_DE_DAM_Price: typeof row.ENTSOE_DE_DAM_Price === "string" 
-    ? parseFloat(row.ENTSOE_DE_DAM_Price) 
-    : row.ENTSOE_DE_DAM_Price,
+    ...row,
+    ENTSOE_DE_DAM_Price: typeof row.ENTSOE_DE_DAM_Price === "string" 
+      ? parseFloat(row.ENTSOE_DE_DAM_Price) 
+      : row.ENTSOE_DE_DAM_Price,
     
-  ENTSOE_GR_DAM_Price: typeof row.ENTSOE_GR_DAM_Price === "string" 
-    ? parseFloat(row.ENTSOE_GR_DAM_Price) 
-    : row.ENTSOE_GR_DAM_Price,
+    ENTSOE_GR_DAM_Price: typeof row.ENTSOE_GR_DAM_Price === "string" 
+      ? parseFloat(row.ENTSOE_GR_DAM_Price) 
+      : row.ENTSOE_GR_DAM_Price,
 
-  ENTSOE_FR_DAM_Price: typeof row.ENTSOE_FR_DAM_Price === "string" 
-    ? parseFloat(row.ENTSOE_FR_DAM_Price) 
-    : row.ENTSOE_FR_DAM_Price,
+    ENTSOE_FR_DAM_Price: typeof row.ENTSOE_FR_DAM_Price === "string" 
+      ? parseFloat(row.ENTSOE_FR_DAM_Price) 
+      : row.ENTSOE_FR_DAM_Price,
 
-  visible: true,
-}));
-
+    visible: true,
+  }));
 
   // Ορισμός των αρχικών ημερομηνιών
   if (timeSeriesData.value.length > 0) {
@@ -141,6 +143,15 @@ const validateInput = (row: TimeSeriesData): boolean => {
 // Ενημέρωση φιλτραρισμένων δεδομένων (μετά την αλλαγή ορατότητας μιας σειράς)
 const updateFilteredData = () => {
   filteredData.value = timeSeriesData.value.filter((row) => row.visible);
+};
+
+// Συνάρτηση για κύλιση στην κορυφή
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0, 
+    left: 0,
+    behavior: "smooth"
+  });
 };
 </script>
 
