@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits, ref } from "vue";
 import type { TimeSeriesData } from "../types/types.ts";
 
 const props = defineProps({
@@ -114,6 +114,14 @@ const validateInput = (row: TimeSeriesData): boolean => {
     }
   }
   return true;
+};
+
+const timeSeriesData = ref([]);
+
+// Συνάρτηση για την επεξεργασία τιμών
+const handleEdit = (index: number, row: any) => {
+  console.log(`Editing row ${index}`, row);
+  // Εδώ μπορείς να προσθέσεις λογική αποθήκευσης ή ενημέρωσης των δεδομένων
 };
 </script>
 

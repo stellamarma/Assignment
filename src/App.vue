@@ -68,12 +68,22 @@ onMounted(async () => {
   const data: TimeSeriesData[] = await response.json();
 
   timeSeriesData.value = data.map((row) => ({
-    ...row,
-    ENTSOE_DE_DAM_Price: parseFloat(row.ENTSOE_DE_DAM_Price),
-    ENTSOE_GR_DAM_Price: parseFloat(row.ENTSOE_GR_DAM_Price),
-    ENTSOE_FR_DAM_Price: parseFloat(row.ENTSOE_FR_DAM_Price),
-    visible: true,
-  }));
+  ...row,
+  ENTSOE_DE_DAM_Price: typeof row.ENTSOE_DE_DAM_Price === "string" 
+    ? parseFloat(row.ENTSOE_DE_DAM_Price) 
+    : row.ENTSOE_DE_DAM_Price,
+    
+  ENTSOE_GR_DAM_Price: typeof row.ENTSOE_GR_DAM_Price === "string" 
+    ? parseFloat(row.ENTSOE_GR_DAM_Price) 
+    : row.ENTSOE_GR_DAM_Price,
+
+  ENTSOE_FR_DAM_Price: typeof row.ENTSOE_FR_DAM_Price === "string" 
+    ? parseFloat(row.ENTSOE_FR_DAM_Price) 
+    : row.ENTSOE_FR_DAM_Price,
+
+  visible: true,
+}));
+
 
   // Ορισμός των αρχικών ημερομηνιών
   if (timeSeriesData.value.length > 0) {
