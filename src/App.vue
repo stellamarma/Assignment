@@ -12,10 +12,19 @@
     <!-- Φίλτρα -->
     <div class="filters">
       <label>📅 Start Date:</label>
-      <input type="date" v-model="startDate" />
+      <input 
+        type="date" 
+        v-model="startDate" 
+        @input="updateStartDate"
+      />
 
       <label>📅 End Date:</label>
-      <input type="date" v-model="endDate" />
+      <!-- Χρησιμοποιούμε την ημερομηνία όπως το Start Date -->
+      <input 
+        type="date" 
+        v-model="endDate" 
+        @input="updateEndDate"
+      />
 
       <button class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
     </div>
@@ -95,6 +104,31 @@ onMounted(async () => {
 
   filteredData.value = [...timeSeriesData.value];
 });
+
+// Συνάρτηση για τη μορφοποίηση της ημερομηνίας σε ημέρα/μήνας/χρόνος
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Υπολογισμένες ιδιότητες για εμφάνιση των ημερομηνιών σε μορφή ημέρα/μήνας/χρόνος
+const formattedStartDate = computed(() => formatDate(startDate.value));
+const formattedEndDate = computed(() => formatDate(endDate.value));
+
+// Ενημέρωση των ημερομηνιών με την σωστή μορφή για αποθήκευση (yyyy-mm-dd)
+const updateStartDate = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  startDate.value = target.value;
+};
+
+const updateEndDate = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  endDate.value = target.value;
+};
 
 // Εφαρμογή φίλτρων με βάση τις ημερομηνίες
 const applyFilters = () => {
