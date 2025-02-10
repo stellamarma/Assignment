@@ -188,7 +188,6 @@ const scrollToTop = () => {
   });
 };
 </script>
-
 <style>
 .error-message {
   color: red;
