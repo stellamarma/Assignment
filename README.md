@@ -21,12 +21,12 @@ git clone https://github.com/stellamarma/Assignment.git
 cd Assignment 
 
 # Install dependencies
-npm install  # or yarn install
+npm ci
 ```
 
 ## ▶️ Usage
 
 ```sh
-npm run dev  # or yarn dev
+npm run dev
 ```
 Then open `http://localhost:5173/` in your browser.

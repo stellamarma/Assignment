@@ -47,7 +47,7 @@ import { ref, onMounted } from "vue";
 import LineChart from "./components/LineChart.vue";
 import TableData from "./components/DataTable.vue";
 import AddDataForm from "./components/AddDataForm.vue";
-import type { TimeSeriesData } from "./types/types.ts";
+import type { TimeSeriesData } from "./types/index.ts";
 
 // Αρχικοί πίνακες δεδομένων και άλλες μεταβλητές
 const timeSeriesData = ref<TimeSeriesData[]>([]);
