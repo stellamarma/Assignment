@@ -93,7 +93,7 @@ onMounted(async () => {
       ? parseFloat(row.ENTSOE_FR_DAM_Price) 
       : row.ENTSOE_FR_DAM_Price,
 
-    visible: true,
+    
   }));
 
   // Ορισμός των αρχικών ημερομηνιών

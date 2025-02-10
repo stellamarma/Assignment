@@ -39,14 +39,13 @@
     DateTime: '',
     ENTSOE_DE_DAM_Price: 0,
     ENTSOE_GR_DAM_Price: 0,
-    ENTSOE_FR_DAM_Price: 0,
-    visible: true,
+    ENTSOE_FR_DAM_Price: 0
   });
   
   const addNewData = () => {
     if (validateInput(newRow.value)) {
       emit("addData", { ...newRow.value });
-      newRow.value = { DateTime: '', ENTSOE_DE_DAM_Price: 0, ENTSOE_GR_DAM_Price: 0, ENTSOE_FR_DAM_Price: 0, visible: true }; // Reset the form
+      newRow.value = { DateTime: '', ENTSOE_DE_DAM_Price: 0, ENTSOE_GR_DAM_Price: 0, ENTSOE_FR_DAM_Price: 0 }; // Reset the form
     } else {
       alert("Invalid input values. Please check and try again.");
     }
