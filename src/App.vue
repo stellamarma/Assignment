@@ -105,20 +105,6 @@ onMounted(async () => {
   filteredData.value = [...timeSeriesData.value];
 });
 
-// Συνάρτηση για τη μορφοποίηση της ημερομηνίας σε ημέρα/μήνας/χρόνος
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
-
-// Υπολογισμένες ιδιότητες για εμφάνιση των ημερομηνιών σε μορφή ημέρα/μήνας/χρόνος
-const formattedStartDate = computed(() => formatDate(startDate.value));
-const formattedEndDate = computed(() => formatDate(endDate.value));
-
 // Ενημέρωση των ημερομηνιών με την σωστή μορφή για αποθήκευση (yyyy-mm-dd)
 const updateStartDate = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -267,4 +253,3 @@ h1 {
 }
 
 </style>
-
