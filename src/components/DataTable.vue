@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { defineProps, defineEmits, ref } from "vue";
-import type { TimeSeriesData } from "../types/types.ts";
+import type { TimeSeriesData } from "../types/index.ts";
 
 const props = defineProps({
   data: {

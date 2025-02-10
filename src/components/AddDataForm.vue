@@ -31,7 +31,7 @@
   
   <script setup lang="ts">
   import { ref, defineEmits } from "vue";
-  import type { TimeSeriesData } from "../types/types.ts";
+  import type { TimeSeriesData } from "../types/index.ts";
   
   const emit = defineEmits();
   

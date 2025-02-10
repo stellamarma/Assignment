@@ -6,7 +6,7 @@
   import { defineProps, computed } from "vue";
   import { Line } from "vue-chartjs";
   import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement, TimeScale } from "chart.js";
-  import type { TimeSeriesData } from "../types/types";
+  import type { TimeSeriesData } from "../types";
   
   // Εγγραφή των απαραίτητων modules
   ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement, TimeScale);
