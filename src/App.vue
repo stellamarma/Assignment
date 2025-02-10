@@ -16,13 +16,15 @@
         range-separator="To"
         start-placeholder="Start date"
         end-placeholder="End date"
-        format="yyyy-MM-dd"
+        format="DD-MM-YYYY"
         @change="applyFilters"
       />
-      <button class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
     </div>
-    
+
     <p v-if="dateError" class="error-message">{{ dateError }}</p>
+    <p v-if="filteredData.length === 0 && !dateError" class="error-message">
+      No data available for the selected date range. If you want to add data, please click "Add New Data".
+    </p>
 
     <div class="buttons">
       <button class="btn btn-primary" @click="showTable = !showTable">
@@ -42,82 +44,123 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from "vue";
+<script setup>
+import { ref, onMounted, watch } from "vue";
+import dayjs from "dayjs";
 import LineChart from "./components/LineChart.vue";
 import TableData from "./components/DataTable.vue";
 import AddDataForm from "./components/AddDataForm.vue";
-import type { TimeSeriesData } from "./types/index.ts";
 
-// Αρχικοί πίνακες δεδομένων και άλλες μεταβλητές
-const timeSeriesData = ref<TimeSeriesData[]>([]);
-const filteredData = ref<TimeSeriesData[]>([]);
-const dateRange = ref<[string, string] | null>(null);
-const dateError = ref<string | null>(null);
+const timeSeriesData = ref([]);
+const filteredData = ref([]);
+const dateRange = ref([null, null]);
+const dateError = ref(null);
 const showTable = ref(false);
 const showAddForm = ref(false);
 
-// Φόρτωση δεδομένων από JSON
-onMounted(async () => {
-  const response = await fetch("/data/timeseries.json");
-  const data: TimeSeriesData[] = await response.json();
-
-  timeSeriesData.value = data.map((row) => ({
-    ...row,
-    ENTSOE_DE_DAM_Price: typeof row.ENTSOE_DE_DAM_Price === "string" 
-      ? parseFloat(row.ENTSOE_DE_DAM_Price) 
-      : row.ENTSOE_DE_DAM_Price,
-    
-    ENTSOE_GR_DAM_Price: typeof row.ENTSOE_GR_DAM_Price === "string" 
-      ? parseFloat(row.ENTSOE_GR_DAM_Price) 
-      : row.ENTSOE_GR_DAM_Price,
-
-    ENTSOE_FR_DAM_Price: typeof row.ENTSOE_FR_DAM_Price === "string" 
-      ? parseFloat(row.ENTSOE_FR_DAM_Price) 
-      : row.ENTSOE_FR_DAM_Price,
-  }));
-
-  if (timeSeriesData.value.length > 0) {
-    dateRange.value = [
-      timeSeriesData.value[0].DateTime.split("T")[0],
-      timeSeriesData.value[timeSeriesData.value.length - 1].DateTime.split("T")[0],
-    ];
-  }
-
-  filteredData.value = [...timeSeriesData.value];
-});
-
-// Εφαρμογή φίλτρων με βάση τις ημερομηνίες
+// 🔹 Η applyFilters πρέπει να δηλωθεί πριν από το onMounted!
 const applyFilters = () => {
+  // Έλεγχος αν οι ημερομηνίες είναι σωστά επιλεγμένες
   if (!dateRange.value || !dateRange.value[0] || !dateRange.value[1]) {
     dateError.value = "Please select dates!";
+    filteredData.value = [];
     return;
   }
 
-  const [start, end] = dateRange.value;
+  const [start, end] = dateRange.value.map(date => {
+    let formattedDate;
+    
+    // Έλεγχος αν η ημερομηνία είναι ήδη αντικείμενο Date
+    if (date instanceof Date) {
+      formattedDate = dayjs(date); // Αν είναι Date, απλά το μετατρέπουμε
+    } else {
+      formattedDate = dayjs(date, "YYYY-MM-DD"); // Αν είναι string, το μετατρέπουμε στη σωστή μορφή
+    }
 
-  if (start > end) {
+    console.log("Formatted Date:", formattedDate.format("YYYY-MM-DD"));  // Εκτύπωση για επιβεβαίωση της μορφής
+    return formattedDate;
+  });
+
+  console.log("Filtering from", start.format("YYYY-MM-DD"), "to", end.format("YYYY-MM-DD"));
+
+  // Έλεγχος αν οι ημερομηνίες είναι έγκυρες
+  if (!start.isValid() || !end.isValid()) {
+    dateError.value = "Invalid date format!";
+    filteredData.value = [];
+    return;
+  }
+
+  if (start.isAfter(end)) {
     dateError.value = "The start date cannot be greater than the end date!";
+    filteredData.value = [];
     return;
   }
 
-  dateError.value = null; // Καθαρισμός σφάλματος
+  dateError.value = null;
 
-  filteredData.value = timeSeriesData.value.filter((row) => {
-    const rowDate = row.DateTime.split("T")[0];
-    return rowDate >= start && rowDate <= end;
-  });
+  // Ανάγνωση δεδομένων από το JSON αρχείο
+  fetch('/data/timeseries.json')  // Σωστή διαδρομή για το αρχείο
+    .then(response => response.json())
+    .then(jsonData => {
+      // Φιλτράρισμα των δεδομένων
+      filteredData.value = jsonData.filter(row => {
+        const rowDate = dayjs(row.DateTime.split("T")[0], "YYYY-MM-DD");
+
+        console.log("Row Date:", rowDate.format("YYYY-MM-DD"));  // Εκτύπωση του rowDate
+
+        // Έλεγχος αν η ημερομηνία της γραμμής είναι έγκυρη
+        if (!rowDate.isValid()) {
+          console.warn("Invalid row date:", row.DateTime);  // Ειδοποίηση για μη έγκυρη ημερομηνία
+        }
+
+        return rowDate.isSameOrAfter(start) && rowDate.isSameOrBefore(end);
+      });
+
+      console.log("Filtered Data:", filteredData.value);
+
+      // Ενημέρωση αν δεν βρεθούν δεδομένα
+      if (filteredData.value.length === 0) {
+        dateError.value = "No data available for the selected date range. If you want to add data, please click 'Add New Data'.";
+      }
+    })
+    .catch(error => {
+      console.error("Error loading the data:", error);
+      dateError.value = "There was an error loading the data.";
+      filteredData.value = [];
+    });
 };
 
-// Συνάρτηση για κύλιση στην κορυφή
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0, 
-    left: 0,
-    behavior: "smooth"
-  });
-};
+
+onMounted(async () => {
+  const response = await fetch("/data/timeseries.json");
+  const data = await response.json();
+
+  console.log("Fetched data:", data);
+
+  if (data.length === 0) {
+    console.error("No data found in JSON!");
+    return;
+  }
+
+  timeSeriesData.value = data;
+  filteredData.value = [...timeSeriesData.value];
+
+  // Ταξινόμηση δεδομένων
+  const sortedData = [...data].sort((a, b) => new Date(a.DateTime) - new Date(b.DateTime));
+  const firstDate = dayjs(sortedData[0].DateTime.split("T")[0]).format("YYYY-MM-DD");
+  const lastDate = dayjs(sortedData[sortedData.length - 1].DateTime.split("T")[0]).format("YYYY-MM-DD");
+
+  console.log("First Date:", firstDate, "Last Date:", lastDate);
+
+  dateRange.value = [firstDate, lastDate];
+
+  applyFilters(); // 🔹 Τώρα καλείται μετά την αρχικοποίηση της
+});
+
+// Παρακολούθηση αλλαγών στο dateRange
+watch(dateRange, applyFilters);
 </script>
+
 
 <style>
 .error-message {
