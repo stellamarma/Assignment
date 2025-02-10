@@ -3,7 +3,6 @@
     <h1>📊 Time Series Dashboard</h1>
 
     <div class="content">
-      <!-- Διάγραμμα -->
       <div class="chart-container">
         <LineChart :data="filteredData" class="chart" />
       </div>
@@ -11,27 +10,20 @@
 
     <!-- Φίλτρα -->
     <div class="filters">
-      <label>📅 Start Date:</label>
-      <input 
-        type="date" 
-        v-model="startDate" 
-        @input="updateStartDate"
+      <el-date-picker
+        v-model="dateRange"
+        type="daterange"
+        range-separator="To"
+        start-placeholder="Start date"
+        end-placeholder="End date"
+        format="yyyy-MM-dd"
+        @change="applyFilters"
       />
-
-      <label>📅 End Date:</label>
-      <!-- Χρησιμοποιούμε την ημερομηνία όπως το Start Date -->
-      <input 
-        type="date" 
-        v-model="endDate" 
-        @input="updateEndDate"
-      />
-
       <button class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
     </div>
     
     <p v-if="dateError" class="error-message">{{ dateError }}</p>
 
-    <!-- Κουμπιά εμφάνισης/απόκρυψης του πίνακα και προσθήκης νέου δεδομένου -->
     <div class="buttons">
       <button class="btn btn-primary" @click="showTable = !showTable">
         {{ showTable ? "Hide Table" : "Show Table" }}
@@ -41,25 +33,17 @@
       </button>
     </div>
 
-    <!-- Εμφάνιση του πίνακα μόνο όταν το showTable είναι true -->
     <TableData v-if="showTable" :data="filteredData" @updateData="updateData" />
-
-    <!-- Κουμπί για κύλιση στην κορυφή της σελίδας, εμφανίζεται μόνο αν ο πίνακας είναι ορατός -->
     <button v-if="showTable" class="btn btn-secondary" @click="scrollToTop" style="position: fixed; bottom: 20px; right: 20px;">
       ⬆️ Go to Top
     </button>
 
-    <!-- Φόρμα προσθήκης νέας τιμής -->
-    <AddDataForm 
-      v-if="showAddForm" 
-      @addData="addNewData" 
-      @cancelAdd="showAddForm = false" 
-    />
+    <AddDataForm v-if="showAddForm" @addData="addNewData" @cancelAdd="showAddForm = false" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import LineChart from "./components/LineChart.vue";
 import TableData from "./components/DataTable.vue";
 import AddDataForm from "./components/AddDataForm.vue";
@@ -68,8 +52,7 @@ import type { TimeSeriesData } from "./types/types.ts";
 // Αρχικοί πίνακες δεδομένων και άλλες μεταβλητές
 const timeSeriesData = ref<TimeSeriesData[]>([]);
 const filteredData = ref<TimeSeriesData[]>([]);
-const startDate = ref<string | null>(null);
-const endDate = ref<string | null>(null);
+const dateRange = ref<[string, string] | null>(null);
 const dateError = ref<string | null>(null);
 const showTable = ref(false);
 const showAddForm = ref(false);
@@ -92,38 +75,28 @@ onMounted(async () => {
     ENTSOE_FR_DAM_Price: typeof row.ENTSOE_FR_DAM_Price === "string" 
       ? parseFloat(row.ENTSOE_FR_DAM_Price) 
       : row.ENTSOE_FR_DAM_Price,
-
-    
   }));
 
-  // Ορισμός των αρχικών ημερομηνιών
   if (timeSeriesData.value.length > 0) {
-    startDate.value = timeSeriesData.value[0].DateTime.split("T")[0];
-    endDate.value = timeSeriesData.value[timeSeriesData.value.length - 1].DateTime.split("T")[0];
+    dateRange.value = [
+      timeSeriesData.value[0].DateTime.split("T")[0],
+      timeSeriesData.value[timeSeriesData.value.length - 1].DateTime.split("T")[0],
+    ];
   }
 
   filteredData.value = [...timeSeriesData.value];
 });
 
-// Ενημέρωση των ημερομηνιών με την σωστή μορφή για αποθήκευση (yyyy-mm-dd)
-const updateStartDate = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  startDate.value = target.value;
-};
-
-const updateEndDate = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  endDate.value = target.value;
-};
-
 // Εφαρμογή φίλτρων με βάση τις ημερομηνίες
 const applyFilters = () => {
-  if (!startDate.value || !endDate.value) {
+  if (!dateRange.value || !dateRange.value[0] || !dateRange.value[1]) {
     dateError.value = "Please select dates!";
     return;
   }
 
-  if (startDate.value > endDate.value) {
+  const [start, end] = dateRange.value;
+
+  if (start > end) {
     dateError.value = "The start date cannot be greater than the end date!";
     return;
   }
@@ -132,37 +105,8 @@ const applyFilters = () => {
 
   filteredData.value = timeSeriesData.value.filter((row) => {
     const rowDate = row.DateTime.split("T")[0];
-    return rowDate >= startDate.value && rowDate <= endDate.value;
+    return rowDate >= start && rowDate <= end;
   });
-};
-
-// Προσθήκη νέας σειράς δεδομένων στον πίνακα
-const addNewData = (newRow: TimeSeriesData) => {
-  timeSeriesData.value.push(newRow);
-  filteredData.value = [...timeSeriesData.value];
-};
-
-// Ενημέρωση δεδομένων στον πίνακα και το διάγραμμα
-const updateData = (updatedRow: TimeSeriesData, index: number) => {
-  if (validateInput(updatedRow)) {
-    filteredData.value[index] = updatedRow;
-  } else {
-    alert("Invalid value. Please enter a number between -2000 and 2000.");
-  }
-};
-
-// Έλεγχος εγκυρότητας εισόδου
-const validateInput = (row: TimeSeriesData): boolean => {
-  const fields = ["ENTSOE_DE_DAM_Price", "ENTSOE_GR_DAM_Price", "ENTSOE_FR_DAM_Price"];
-  return fields.every((field) => {
-    const value = row[field];
-    return !isNaN(value) && value >= -2000 && value <= 2000;
-  });
-};
-
-// Ενημέρωση φιλτραρισμένων δεδομένων (μετά την αλλαγή ορατότητας μιας σειράς)
-const updateFilteredData = () => {
-  filteredData.value = timeSeriesData.value.filter((row) => row.visible);
 };
 
 // Συνάρτηση για κύλιση στην κορυφή
@@ -174,6 +118,7 @@ const scrollToTop = () => {
   });
 };
 </script>
+
 <style>
 .error-message {
   color: red;
