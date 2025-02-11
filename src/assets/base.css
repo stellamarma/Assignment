@@ -14,7 +14,7 @@ h1 {
 
 .filters input {
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #cccccc;
   border-radius: 5px;
 }
 
@@ -58,7 +58,7 @@ th, td {
 }
 
 th {
-  background: #0961e7;
+  background: #ffffff82;/* gia to hmerologio */
   color: white;
 }
 
