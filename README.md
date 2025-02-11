@@ -1,9 +1,12 @@
 # 📊 Time Series Dashboard
 
+## 🚀 Live Demo
 
-## 💻 About the Project & 🚀 Live Demo
-The **Time Series Dashboard** is a Vue 3 and TypeScript-based web application that visualizes and manages time-series data. Users can filter data, display charts, and update or add new records dynamically.You can check out the deployed version of the Time Series Dashboard here:  
+You can check out the deployed version of the Time Series Dashboard here:  
 🔗 [Time Series Dashboard](https://assignment-drab-seven.vercel.app/)
+
+## 💻 About the Project
+The **Time Series Dashboard** is a Vue 3 and TypeScript-based web application that visualizes and manages time-series data. Users can filter data, display charts, and update or add new records dynamically.
 
 ## 🛠️ Features
 - 📅 Filter data based on date range
