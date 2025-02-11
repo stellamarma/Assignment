@@ -30,42 +30,45 @@
   
   
   <script setup lang="ts">
-  import { ref, defineEmits } from "vue";
-  import type { TimeSeriesData } from "../types/index.ts";
-  
-  const emit = defineEmits();
-  
-  const newRow = ref<TimeSeriesData>({
-    DateTime: '',
-    ENTSOE_DE_DAM_Price: 0,
-    ENTSOE_GR_DAM_Price: 0,
-    ENTSOE_FR_DAM_Price: 0
-  });
-  
-  const addNewData = () => {
-    if (validateInput(newRow.value)) {
-      emit("addData", { ...newRow.value });
-      newRow.value = { DateTime: '', ENTSOE_DE_DAM_Price: 0, ENTSOE_GR_DAM_Price: 0, ENTSOE_FR_DAM_Price: 0 }; // Reset the form
-    } else {
-      alert("Invalid input values. Please check and try again.");
+import { ref, defineEmits } from "vue";
+import type { TimeSeriesData } from "../types/index.ts";
+
+const emit = defineEmits();
+
+const newRow = ref<TimeSeriesData>({
+  DateTime: '',
+  ENTSOE_DE_DAM_Price: 0,
+  ENTSOE_GR_DAM_Price: 0,
+  ENTSOE_FR_DAM_Price: 0
+});
+
+const addNewData = () => {
+  if (validateInput(newRow.value)) {
+    emit("addData", { ...newRow.value });
+    newRow.value = { DateTime: '', ENTSOE_DE_DAM_Price: 0, ENTSOE_GR_DAM_Price: 0, ENTSOE_FR_DAM_Price: 0 }; // Reset the form
+  } else {
+    alert("Invalid input values. Please check and try again.");
+  }
+};
+
+// Χρήση του keyof για να περιορίσουμε τα πεδία που ελέγχονται
+const validateInput = (row: TimeSeriesData): boolean => {
+  const fields: (keyof TimeSeriesData)[] = ["ENTSOE_DE_DAM_Price", "ENTSOE_GR_DAM_Price", "ENTSOE_FR_DAM_Price"];
+  for (const field of fields) {
+    const value = row[field];
+    // Ο έλεγχος του τύπου είναι πλέον ασφαλής γιατί χρησιμοποιούμε τα αυστηρά κλειδιά του τύπου
+    if (isNaN(value as number) || value < -2000 || value > 2000) {
+      return false;
     }
-  };
-  
-  const validateInput = (row: TimeSeriesData): boolean => {
-    const fields = ["ENTSOE_DE_DAM_Price", "ENTSOE_GR_DAM_Price", "ENTSOE_FR_DAM_Price"];
-    for (const field of fields) {
-      const value = row[field];
-      if (isNaN(value) || value < -2000 || value > 2000) {
-        return false;
-      }
-    }
-    return true;
-  };
-  
-  const cancelAdd = () => {
-    emit("cancelAdd");
-  };
-  </script>
+  }
+  return true;
+};
+
+const cancelAdd = () => {
+  emit("cancelAdd");
+};
+</script>
+
   <style>
   .add-form {
     width: 100%;
