@@ -30,5 +30,7 @@ npm ci
 npm run dev
 ```
 Then open `http://localhost:5173/` in your browser.
-## Vercel
-Visit site https://assignment-drab-seven.vercel.app/
+## 🚀 Live Demo
+
+You can check out the deployed version of the Time Series Dashboard here:  
+🔗 [Time Series Dashboard](https://assignment-drab-seven.vercel.app/)
