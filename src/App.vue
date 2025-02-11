@@ -3,7 +3,6 @@
     <h1>📊 Time Series Dashboard</h1>
 
     <div class="content">
-      <!-- Διάγραμμα -->
       <div class="chart-container">
         <LineChart :data="filteredData" class="chart" />
       </div>
@@ -11,27 +10,22 @@
 
     <!-- Φίλτρα -->
     <div class="filters">
-      <label>📅 Start Date:</label>
-      <input 
-        type="date" 
-        v-model="startDate" 
-        @input="updateStartDate"
+      <el-date-picker
+        v-model="dateRange"
+        type="daterange"
+        range-separator="To"
+        start-placeholder="Start date"
+        end-placeholder="End date"
+        format="DD-MM-YYYY"
+        @change="applyFilters"
       />
-
-      <label>📅 End Date:</label>
-      <!-- Χρησιμοποιούμε την ημερομηνία όπως το Start Date -->
-      <input 
-        type="date" 
-        v-model="endDate" 
-        @input="updateEndDate"
-      />
-
-      <button class="btn btn-primary" @click="applyFilters">🔍 Apply</button>
     </div>
-    
-    <p v-if="dateError" class="error-message">{{ dateError }}</p>
 
-    <!-- Κουμπιά εμφάνισης/απόκρυψης του πίνακα και προσθήκης νέου δεδομένου -->
+    <p v-if="dateError" class="error-message">{{ dateError }}</p>
+    <p v-if="filteredData.length === 0 && !dateError" class="error-message">
+      No data available for the selected date range. If you want to add data, please click "Add New Data".
+    </p>
+
     <div class="buttons">
       <button class="btn btn-primary" @click="showTable = !showTable">
         {{ showTable ? "Hide Table" : "Show Table" }}
@@ -41,140 +35,104 @@
       </button>
     </div>
 
-    <!-- Εμφάνιση του πίνακα μόνο όταν το showTable είναι true -->
     <TableData v-if="showTable" :data="filteredData" @updateData="updateData" />
+    <AddDataForm v-if="showAddForm" @addData="addNewData" @cancelAdd="showAddForm = false" />
 
-    <!-- Κουμπί για κύλιση στην κορυφή της σελίδας, εμφανίζεται μόνο αν ο πίνακας είναι ορατός -->
-    <button v-if="showTable" class="btn btn-secondary" @click="scrollToTop" style="position: fixed; bottom: 20px; right: 20px;">
+    <!-- Go to Top Button -->
+    <button v-if="showGoTop" class="btn btn-secondary go-top" @click="scrollToTop">
       ⬆️ Go to Top
     </button>
-
-    <!-- Φόρμα προσθήκης νέας τιμής -->
-    <AddDataForm 
-      v-if="showAddForm" 
-      @addData="addNewData" 
-      @cancelAdd="showAddForm = false" 
-    />
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+<script setup>
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import dayjs from "dayjs";
 import LineChart from "./components/LineChart.vue";
 import TableData from "./components/DataTable.vue";
 import AddDataForm from "./components/AddDataForm.vue";
-import type { TimeSeriesData } from "./types/index.ts";
 
-// Αρχικοί πίνακες δεδομένων και άλλες μεταβλητές
-const timeSeriesData = ref<TimeSeriesData[]>([]);
-const filteredData = ref<TimeSeriesData[]>([]);
-const startDate = ref<string | null>(null);
-const endDate = ref<string | null>(null);
-const dateError = ref<string | null>(null);
+const timeSeriesData = ref([]);
+const filteredData = ref([]);
+const dateRange = ref([null, null]);
+const dateError = ref(null);
 const showTable = ref(false);
 const showAddForm = ref(false);
+const showGoTop = ref(false);
 
-// Φόρτωση δεδομένων από JSON
-onMounted(async () => {
-  const response = await fetch("/data/timeseries.json");
-  const data: TimeSeriesData[] = await response.json();
-
-  timeSeriesData.value = data.map((row) => ({
-    ...row,
-    ENTSOE_DE_DAM_Price: typeof row.ENTSOE_DE_DAM_Price === "string" 
-      ? parseFloat(row.ENTSOE_DE_DAM_Price) 
-      : row.ENTSOE_DE_DAM_Price,
-    
-    ENTSOE_GR_DAM_Price: typeof row.ENTSOE_GR_DAM_Price === "string" 
-      ? parseFloat(row.ENTSOE_GR_DAM_Price) 
-      : row.ENTSOE_GR_DAM_Price,
-
-    ENTSOE_FR_DAM_Price: typeof row.ENTSOE_FR_DAM_Price === "string" 
-      ? parseFloat(row.ENTSOE_FR_DAM_Price) 
-      : row.ENTSOE_FR_DAM_Price,
-
-    
-  }));
-
-  // Ορισμός των αρχικών ημερομηνιών
-  if (timeSeriesData.value.length > 0) {
-    startDate.value = timeSeriesData.value[0].DateTime.split("T")[0];
-    endDate.value = timeSeriesData.value[timeSeriesData.value.length - 1].DateTime.split("T")[0];
+const applyFilters = () => {
+  if (!dateRange.value || !dateRange.value[0] || !dateRange.value[1]) {
+    dateError.value = "Please select dates!";
+    filteredData.value = [];
+    return;
   }
 
-  filteredData.value = [...timeSeriesData.value];
+  const [start, end] = dateRange.value.map(date => dayjs(date instanceof Date ? date : dayjs(date, "YYYY-MM-DD")));
+
+  if (!start.isValid() || !end.isValid() || start.isAfter(end)) {
+    dateError.value = "Invalid date range!";
+    filteredData.value = [];
+    return;
+  }
+
+  dateError.value = null;
+  fetch('/data/timeseries.json')
+    .then(response => response.json())
+    .then(jsonData => {
+      filteredData.value = jsonData.filter(row => {
+        const rowDate = dayjs(row.DateTime.split("T")[0], "YYYY-MM-DD");
+        return rowDate.isSameOrAfter(start) && rowDate.isSameOrBefore(end);
+      });
+      if (filteredData.value.length === 0) {
+        dateError.value = "No data available for the selected date range.";
+      }
+    })
+    .catch(error => {
+      console.error("Error loading the data:", error);
+      dateError.value = "There was an error loading the data.";
+    });
+};
+
+onMounted(async () => {
+  window.addEventListener("scroll", handleScroll);
+  const response = await fetch("/data/timeseries.json");
+  const data = await response.json();
+
+  if (data.length === 0) return;
+
+  timeSeriesData.value = data;
+  filteredData.value = [...data];
+  dateRange.value = [dayjs(data[0].DateTime.split("T")[0]), dayjs(data[data.length - 1].DateTime.split("T")[0])];
+  applyFilters();
 });
 
-// Ενημέρωση των ημερομηνιών με την σωστή μορφή για αποθήκευση (yyyy-mm-dd)
-const updateStartDate = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  startDate.value = target.value;
-};
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
 
-const updateEndDate = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  endDate.value = target.value;
-};
-
-// Εφαρμογή φίλτρων με βάση τις ημερομηνίες
-const applyFilters = () => {
-  if (!startDate.value || !endDate.value) {
-    dateError.value = "Please select dates!";
-    return;
-  }
-
-  if (startDate.value > endDate.value) {
-    dateError.value = "The start date cannot be greater than the end date!";
-    return;
-  }
-
-  dateError.value = null; // Καθαρισμός σφάλματος
-
-  filteredData.value = timeSeriesData.value.filter((row) => {
-    const rowDate = row.DateTime.split("T")[0];
-    return rowDate >= startDate.value && rowDate <= endDate.value;
-  });
-};
-
-// Προσθήκη νέας σειράς δεδομένων στον πίνακα
-const addNewData = (newRow: TimeSeriesData) => {
-  timeSeriesData.value.push(newRow);
-  filteredData.value = [...timeSeriesData.value];
-};
-
-// Ενημέρωση δεδομένων στον πίνακα και το διάγραμμα
-const updateData = (updatedRow: TimeSeriesData, index: number) => {
-  if (validateInput(updatedRow)) {
-    filteredData.value[index] = updatedRow;
-  } else {
-    alert("Invalid value. Please enter a number between -2000 and 2000.");
-  }
-};
-
-// Έλεγχος εγκυρότητας εισόδου
-const validateInput = (row: TimeSeriesData): boolean => {
-  const fields = ["ENTSOE_DE_DAM_Price", "ENTSOE_GR_DAM_Price", "ENTSOE_FR_DAM_Price"];
-  return fields.every((field) => {
-    const value = row[field];
-    return !isNaN(value) && value >= -2000 && value <= 2000;
-  });
-};
-
-// Ενημέρωση φιλτραρισμένων δεδομένων (μετά την αλλαγή ορατότητας μιας σειράς)
-const updateFilteredData = () => {
-  filteredData.value = timeSeriesData.value.filter((row) => row.visible);
-};
-
-// Συνάρτηση για κύλιση στην κορυφή
 const scrollToTop = () => {
-  window.scrollTo({
-    top: 0, 
-    left: 0,
-    behavior: "smooth"
-  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
+
+const handleScroll = () => {
+  showGoTop.value = window.scrollY > 200;
+};
+
+watch(dateRange, applyFilters);
 </script>
+
 <style>
+.go-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
 .error-message {
   color: red;
   font-weight: bold;
