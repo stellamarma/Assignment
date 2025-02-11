@@ -30,3 +30,5 @@ npm ci
 npm run dev
 ```
 Then open `http://localhost:5173/` in your browser.
+## Vercel
+Visit site https://assignment-drab-seven.vercel.app/
