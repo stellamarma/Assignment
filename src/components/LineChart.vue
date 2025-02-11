@@ -34,6 +34,7 @@
       ]
     };
   });
+  
   // Επιλογές διαγράμματος με προσαρμοσμένο format στον άξονα Χ
   const chartOptions = {
     responsive: true,
@@ -41,7 +42,7 @@
     scales: {
       x: {
         ticks: {
-          callback: function (value: any, index: string | number, values: any) {
+          callback: function (value: any, index: number) {  // Ο τύπος του `index` είναι τώρα `number`
             return formatDate(props.data[index]?.DateTime || "");
           }
         }
