@@ -1,4 +1,6 @@
 <template>
+  <Menu />
+  <MenuSearch />
   <div class="dashboard">
     <h1>📊 Time Series Dashboard</h1>
 
@@ -51,6 +53,8 @@ import dayjs from "dayjs";
 import LineChart from "./components/LineChart.vue";
 import TableData from "./components/DataTable.vue";
 import AddDataForm from "./components/AddDataForm.vue";
+import Menu from "./components/Menu.vue";
+import MenuSearch from "./components/Menu-Search.vue";
 
 const timeSeriesData = ref([]);
 const filteredData = ref([]);
