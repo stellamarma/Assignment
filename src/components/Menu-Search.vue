@@ -4,7 +4,9 @@
             <form class="search-form">
                 <input type="search" class="search-input" placeholder="Search..." aria-label="Search">
             </form>
-
+            <a href="#" class="user-avatar">
+                <img src="https://i.pinimg.com/736x/9f/46/82/9f4682f76f25fc4e2dde3e942e150c39.jpg" alt="User Avatar">
+            </a>
         </div>
     </header>
 </template>
