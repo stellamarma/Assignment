@@ -7,18 +7,25 @@
         @open="handleOpen"
         @close="handleClose"
       >
-        <el-menu-item index="1">
+        <!-- Show Table -->
+        <el-menu-item index="1" @click="toggleShowTable">
           <el-icon><icon-menu /></el-icon>
-          <template #title>Show Table</template>
+          <template #title>{{ showTable ? "Hide Table" : "Show Table" }}</template>
         </el-menu-item>
-        <el-menu-item index="2">
+  
+        <!-- Add New Data -->
+        <el-menu-item index="2" @click="toggleShowAddForm">
           <el-icon><Plus /></el-icon>
-          <template #title>Add New Data</template>
+          <template #title>{{ showAddForm ? "Cancel" : "Add New Data" }}</template>
         </el-menu-item>
+  
+        <!-- Edit Data -->
         <el-menu-item index="3">
           <el-icon><Edit /></el-icon>
           <template #title>Edit Data</template>
         </el-menu-item>
+  
+        <!-- Delete zeroes -->
         <el-menu-item index="4">
           <el-icon><DeleteFilled /></el-icon>
           <template #title>Delete zeroes</template>
@@ -28,8 +35,22 @@
   </template>
   
   <script lang="ts" setup>
+  // Εισαγωγές
   import { ref, onMounted, onUnmounted } from 'vue';
-  import { DeleteFilled, Edit, Plus, Menu as IconMenu } from '@element-plus/icons-vue';
+  import { DeleteFilled, Edit, Plus, Menu as IconMenu } from '@element-plus/icons-vue';  // Εισάγουμε τα icons
+  
+  const props = defineProps({
+    showTable: {
+      type: Boolean,
+      required: true
+    },
+    showAddForm: {
+      type: Boolean,
+      required: true
+    }
+  });
+  
+  const emit = defineEmits(['updateShowTable', 'updateShowAddForm']);
   
   const isCollapsed = ref(window.innerWidth < 768);
   
@@ -52,9 +73,17 @@
   const handleClose = (key: string, keyPath: string[]) => {
     console.log(key, keyPath);
   };
+  
+  const toggleShowTable = () => {
+    emit('updateShowTable', !props.showTable);
+  };
+  
+  const toggleShowAddForm = () => {
+    emit('updateShowAddForm', !props.showAddForm);
+  };
   </script>
   
-  <style>
+  <style scoped>
   .sidebar {
     position: fixed;
     left: 0;
@@ -74,6 +103,15 @@
   .el-menu-vertical-demo {
     width: 100%;
     min-height: 100vh;
+  }
+  
+  .el-menu-item {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .el-menu-vertical-demo .el-menu-item {
+    padding: 15px 20px;
   }
   
   @media (max-width: 768px) {

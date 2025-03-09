@@ -1,5 +1,5 @@
 <template>
-  <Menu />
+  <Menu :showTable="showTable" :showAddForm="showAddForm" @updateShowTable="showTable = $event" @updateShowAddForm="showAddForm = $event" />
   <MenuSearch />
   <div class="dashboard">
     <h1>📊 Time Series Dashboard</h1>
@@ -10,7 +10,6 @@
       </div>
     </div>
 
-    <!-- Φίλτρα -->
     <div class="filters">
       <el-date-picker
         v-model="dateRange"
@@ -28,19 +27,9 @@
       No data available for the selected date range. If you want to add data, please click "Add New Data".
     </p>
 
-    <div class="buttons">
-      <button class="btn btn-primary" @click="showTable = !showTable">
-        {{ showTable ? "Hide Table" : "Show Table" }}
-      </button>
-      <button class="btn btn-success" @click="showAddForm = !showAddForm">
-        {{ showAddForm ? "Cancel" : "Add New Data" }}
-      </button>
-    </div>
-
     <TableData v-if="showTable" :data="filteredData" @updateData="updateData" />
     <AddDataForm v-if="showAddForm" @addData="addNewData" @cancelAdd="showAddForm = false" />
 
-    <!-- Go to Top Button -->
     <button v-if="showGoTop" class="btn btn-secondary go-top" @click="scrollToTop">
       ⬆️ Go to Top
     </button>
