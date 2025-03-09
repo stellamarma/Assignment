@@ -29,8 +29,8 @@
 
 /* Search Form */
 .search-form {
-    width: 100%;
-    max-width: 500px; /* Σταθερό μέγεθος για να φαίνεται σωστά παντού */
+    width: 95%;
+    max-width: 1000px; /* Σταθερό μέγεθος για να φαίνεται σωστά παντού */
 }
 
 /* Search Input */
