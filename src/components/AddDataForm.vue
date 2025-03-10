@@ -91,14 +91,18 @@ const addNewData = () => {
 // Επικύρωση των δεδομένων
 const validateInput = (row: TimeSeriesData): boolean => {
   const fields = ['ENTSOE_DE_DAM_Price', 'ENTSOE_GR_DAM_Price', 'ENTSOE_FR_DAM_Price'];
+
   for (const field of fields) {
-    const value = row[field];
-    if (isNaN(value) || value < -2000 || value > 2000) {
+    const value = row[field as keyof TimeSeriesData]; // Type assertion
+
+    if (typeof value !== 'number' || isNaN(value) || value < -2000 || value > 2000) {
       return false;
     }
   }
+
   return true;
 };
+;
 
 // Συνάρτηση ακύρωσης
 const cancelAdd = () => {
