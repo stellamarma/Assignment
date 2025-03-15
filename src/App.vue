@@ -1,6 +1,6 @@
 <template>
   <Menu :showTable="showTable" :showAddForm="showAddForm" @updateShowTable="showTable = $event" @updateShowAddForm="showAddForm = $event" />
-  <MenuSearch />
+  <!-- <MenuSearch /> -->
   <div class="dashboard">
     <h1>📊 Time Series Dashboard</h1>
 

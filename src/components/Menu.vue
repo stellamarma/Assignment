@@ -19,19 +19,7 @@
           <template #title>{{ showAddForm ? "Cancel" : "Add New Data" }}</template>
         </el-menu-item>
   
-        <!-- Edit Data -->
-        <el-menu-item index="3">
-          <el-icon><Edit /></el-icon>
-          <template #title>Edit Data</template>
-        </el-menu-item>
-  
-        <!-- Delete zeroes -->
-        <el-menu-item index="4">
-          <el-icon><DeleteFilled /></el-icon>
-          <template #title>Delete zeroes</template>
-        </el-menu-item>
-      </el-menu>
-    </div>
+</el-menu></div>
   </template>
   
   <script lang="ts" setup>
